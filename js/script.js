@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
 // Konfigurasi Firebase
 const firebaseConfig = {
@@ -15,7 +15,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// Referensi ke node /status
+const statusRef = ref(db, 'status');
+
+// Fungsi untuk mengatur status awal
+function setInitialStatus() {
+  set(statusRef, {
+    accepted: false,
+    timestamp: Date.now()
+  }).then(() => {
+    console.log("Status awal berhasil diatur");
+  }).catch((error) => {
+    console.error("Gagal mengatur status awal:", error);
+  });
+}
+
+// Panggil fungsi setInitialStatus saat halaman dimuat
 document.addEventListener("DOMContentLoaded", () => {
+  setInitialStatus(); // Reset status saat halaman dimuat atau direfresh
+
   const yesBtn = document.getElementById("yesBtn");
   const noBtn = document.getElementById("noBtn");
   const mainContainer = document.querySelector(".main-container");
@@ -128,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Kirim status ke Firebase
-    set(ref(db, 'status'), {
+    set(statusRef, {
       accepted: true,
       timestamp: Date.now()
     }).then(() => {
